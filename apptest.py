@@ -5,7 +5,7 @@ import os
 from flask_cors import CORS  # 允許跨域請求 (讓 GitHub Pages 可以訪問)
 from cameratest import Camera  # 確保你的 camera 模組存在
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder='template')
 CORS(app)  # 啟用 CORS，允許來自 GitHub Pages 的請求
 
 # LINE Notify 設定
