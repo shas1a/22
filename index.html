@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+ <html lang="zh-Hant">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>捕壽籠資訊站</title>
+     <style>
+         body {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             text-align: center;
+             background-color: #f0f4f8;
+             margin: 0;
+             padding: 0;
+         }
+         h1 {
+             color: #333;
+             font-size: 36px;
+             margin-top: 30px;
+         }
+         .container {
+             max-width: 800px;
+             margin: 0 auto;
+             padding: 20px;
+             background-color: #ffffff;
+             border-radius: 12px;
+             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+         }
+         button {
+             font-size: 18px;
+             padding: 10px 20px;
+             margin: 10px;
+             border: none;
+             border-radius: 8px;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+         }
+         button:hover {
+             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+             transform: translateY(-2px);
+         }
+         button:disabled {
+             background-color: #ccc;
+             cursor: not-allowed;
+             box-shadow: none;
+             transform: none;
+         }
+         button#startFeederBtn {
+             background-color: #DEB887; /* Dark teal */
+             color: white;
+         }
+         button#pauseFeederBtn {
+             background-color: #D2B48C; /* Dark gold */
+             color: white;
+         }
+         button#resetFeederBtn {
+             background-color: #CD853F; /* Dark red */
+             color: white;
+         }
+         button#startSprayerBtn {
+             background-color: #B8860B; /* Dark blue */
+             color: white;
+         }
+         button#pauseSprayerBtn {
+             background-color: #D2691E; /* Dark purple */
+             color: white;
+         }
+         button#resetSprayerBtn {
+             background-color: #A0522D; /* Sienna */
+             color: white;
+         }
+         select {
+             font-size: 18px;
+             padding: 10px;
+             margin: 10px;
+             border-radius: 8px;
+             border: 1px solid #ccc;
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+             transition: all 0.3s ease;
+         }
+         select:focus {
+             outline: none;
+             box-shadow: 0 0 8px #4CAF50;
+         }
+         .timer {
+             font-size: 48px;
+             margin-top: 20px;
+             color: #333;
+         }
+         .status {
+             font-size: 18px;
+             margin-top: 10px;
+             color: #888;
+         }
+         #videoContainer {
+             display: none;
+             margin-top: 30px;
+             padding: 20px;
+             background-color: #fafafa;
+             border-radius: 12px;
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+         }
+         img {
+             width: 100%;
+             max-width: 640px;
+             height: auto;
+             border-radius: 8px;
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+         }
+         @media (max-width: 768px) {
+             button, select {
+                 width: 90%;
+                 margin: 5px;
+             }
+             img {
+                 width: 100%;
+             }
+         }
+     </style>
+ </head>
+ <body>
+     <div class="container">
+         <h1>捕壽籠資訊站</h1>
+ 
+         <h2>撒餌器計時器</h2>
+         <button id="startFeederBtn">開始</button>
+         <button id="pauseFeederBtn">暫停</button>
+         <button id="resetFeederBtn">清除撒餌器設定時間</button>
+         <br><br>
+         <label for="feederTimeSelect">設定時間:</label>
+         <select id="feederTimeSelect">
+             <option value="" disabled selected>選擇時間</option>
+             <option value="10">10 秒 (測試)</option>
+             <option value="7200">2 小時</option>
+             <option value="14400">4 小時</option>
+             <option value="21600">6 小時</option>
+             <option value="28800">8 小時</option>
+         </select>
+         <div id="feederTimer" class="timer">00:00:00</div>
+         <div id="feederStatus" class="status"></div>
+ 
+         <h2>噴灑器計時器</h2>
+         <button id="startSprayerBtn">開始</button>
+         <button id="pauseSprayerBtn">暫停</button>
+         <button id="resetSprayerBtn">清除噴灑器設定時間</button>   
+         <br><br>     
+         <label for="sprayerTimeSelect">設定時間:</label>
+         <select id="sprayerTimeSelect">
+             <option value="" disabled selected>選擇時間</option>
+             <option value="10">10 秒 (測試)</option>
+             <option value="7200">2 小時</option>
+             <option value="14400">4 小時</option>
+             <option value="21600">6 小時</option>
+             <option value="28800">8 小時</option>
+         </select>
+         <div id="sprayerTimer" class="timer">00:00:00</div>
+         <div id="sprayerStatus" class="status"></div>
+ 
+         <br><br>
+ 
+         <button id="toggleVideoBtn">顯示即時影像</button>
+         <button id="downloadHistoryBtn">歷史紀錄</button>
+ 
+         <div id="videoContainer">
+             <h2>即時影像</h2>
+             <img src="/video_feed" alt="即時影像">
+         </div>
+     </div>
+ 
+     <script>
+         let feederInterval, sprayerInterval;
+         let isFeederRunning = false, isSprayerRunning = false;
+         let feederTimeInSeconds = 0, sprayerTimeInSeconds = 0;
+         let currentFeederTime = 0, currentSprayerTime = 0;
+         let isVideoVisible = false;
+ 
+         function formatTime(seconds) {
+             let hours = Math.floor(seconds / 3600);
+             let minutes = Math.floor((seconds % 3600) / 60);
+             let secondsLeft = seconds % 60;
+             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secondsLeft).padStart(2, '0')}`;
+         }
+ 
+         function updateFeederButtonStates() {
+             const startFeederBtn = document.getElementById("startFeederBtn");
+             const pauseFeederBtn = document.getElementById("pauseFeederBtn");
+             const resetFeederBtn = document.getElementById("resetFeederBtn");
+             const feederTimeSelect = document.getElementById("feederTimeSelect");
+ 
+             const hasSelectedTime = feederTimeSelect.value !== "";
+             startFeederBtn.disabled = !hasSelectedTime || isFeederRunning;
+             resetFeederBtn.disabled = !hasSelectedTime || isFeederRunning;
+             pauseFeederBtn.disabled = !isFeederRunning;
+         }
+ 
+         function updateSprayerButtonStates() {
+             const startSprayerBtn = document.getElementById("startSprayerBtn");
+             const pauseSprayerBtn = document.getElementById("pauseSprayerBtn");
+             const resetSprayerBtn = document.getElementById("resetSprayerBtn");
+             const sprayerTimeSelect = document.getElementById("sprayerTimeSelect");
+ 
+             const hasSelectedTime = sprayerTimeSelect.value !== "";
+             startSprayerBtn.disabled = !hasSelectedTime || isSprayerRunning;
+             resetSprayerBtn.disabled = !hasSelectedTime || isSprayerRunning;
+             pauseSprayerBtn.disabled = !isSprayerRunning;
+         }
+ 
+         function sendFeederNotification() {
+             fetch('/notify/feeder', { method: 'POST' })
+                 .then(response => response.json())
+                 .then(data => {
+                     if (data.status === '通知已發送') {
+                         document.getElementById("feederStatus").innerText = "LINE 通知已發送 (撒餌器)";
+                     } else {
+                         document.getElementById("feederStatus").innerText = `通知發送失敗 (撒餌器): ${data.error}`;
+                     }
+                 })
+                 .catch(error => {
+                     document.getElementById("feederStatus").innerText = "發送 LINE 通知時發生錯誤 (撒餌器)";
+                 });
+         }
+ 
+         function sendSprayerNotification() {
+             fetch('/notify/sprayer', { method: 'POST' })
+                 .then(response => response.json())
+                 .then(data => {
+                     if (data.status === '通知已發送') {
+                         document.getElementById("sprayerStatus").innerText = "LINE 通知已發送 (噴灑器)";
+                     } else {
+                         document.getElementById("sprayerStatus").innerText = `通知發送失敗 (噴灑器): ${data.error}`;
+                     }
+                 })
+                 .catch(error => {
+                     document.getElementById("sprayerStatus").innerText = "發送 LINE 通知時發生錯誤 (噴灑器)";
+                 });
+         }
+ 
+         document.getElementById("feederTimeSelect").addEventListener("change", function () {
+             feederTimeInSeconds = parseInt(this.value);
+             currentFeederTime = feederTimeInSeconds;
+             document.getElementById("feederTimer").innerText = formatTime(currentFeederTime);
+             updateFeederButtonStates();
+         });
+ 
+         document.getElementById("sprayerTimeSelect").addEventListener("change", function () {
+             sprayerTimeInSeconds = parseInt(this.value);
+             currentSprayerTime = sprayerTimeInSeconds;
+             document.getElementById("sprayerTimer").innerText = formatTime(currentSprayerTime);
+             updateSprayerButtonStates();
+         });
+ 
+         document.getElementById("startFeederBtn").addEventListener("click", startFeederTimer);
+         document.getElementById("pauseFeederBtn").addEventListener("click", function () {
+             clearInterval(feederInterval);
+             isFeederRunning = false;
+             document.getElementById("feederStatus").innerText = "撒餌器計時暫停!";
+             updateFeederButtonStates();
+         });
+         document.getElementById("resetFeederBtn").addEventListener("click", function () {
+             clearInterval(feederInterval);
+             isFeederRunning = false;
+             currentFeederTime = 0; // Reset to zero
+             document.getElementById("feederTimer").innerText = formatTime(currentFeederTime);
+             document.getElementById("feederStatus").innerText = "撒餌器計時器已重置!";
+             document.getElementById("feederTimeSelect").selectedIndex = 0; // Clear selected time
+             updateFeederButtonStates();
+         });
+ 
+         function startFeederTimer() {
+             if (!isFeederRunning && feederTimeInSeconds > 0) {
+                 isFeederRunning = true;
+                 feederInterval = setInterval(() => {
+                     if (currentFeederTime > 0) {
+                         currentFeederTime--;
+                         document.getElementById("feederTimer").innerText = formatTime(currentFeederTime);
+                     } else {
+                         clearInterval(feederInterval);
+                         isFeederRunning = false;
+                         document.getElementById("feederStatus").innerText = "撒餌器計時結束!";
+                         sendFeederNotification(); // Call the feeder notification function
+                         updateFeederButtonStates();
+                     }
+                 }, 1000);
+                 document.getElementById("feederStatus").innerText = `撒餌器計時器開始: ${formatTime(feederTimeInSeconds)}`;
+                 updateFeederButtonStates();
+             }
+         }
+ 
+         document.getElementById("startSprayerBtn").addEventListener("click", startSprayerTimer);
+         document.getElementById("pauseSprayerBtn").addEventListener("click", function () {
+             clearInterval(sprayerInterval);
+             isSprayerRunning = false;
+             document.getElementById("sprayerStatus").innerText = "噴灑器計時暫停!";
+             updateSprayerButtonStates();
+         });
+         document.getElementById("resetSprayerBtn").addEventListener("click", function () {
+             clearInterval(sprayerInterval);
+             isSprayerRunning = false;
+             currentSprayerTime = 0; // Reset to zero
+             document.getElementById("sprayerTimer").innerText = formatTime(currentSprayerTime);
+             document.getElementById("sprayerStatus").innerText = "噴灑器計時器已重置!";
+             document.getElementById("sprayerTimeSelect").selectedIndex = 0; // Clear selected time
+             updateSprayerButtonStates();
+         });
+ 
+         function startSprayerTimer() {
+             if (!isSprayerRunning && sprayerTimeInSeconds > 0) {
+                 isSprayerRunning = true;
+                 sprayerInterval = setInterval(() => {
+                     if (currentSprayerTime > 0) {
+                         currentSprayerTime--;
+                         document.getElementById("sprayerTimer").innerText = formatTime(currentSprayerTime);
+                     } else {
+                         clearInterval(sprayerInterval);
+                         isSprayerRunning = false;
+                         document.getElementById("sprayerStatus").innerText = "噴灑器計時結束!";
+                         sendSprayerNotification(); // Call the sprayer notification function
+                         updateSprayerButtonStates();
+                     }
+                 }, 1000);
+                 document.getElementById("sprayerStatus").innerText = `噴灑器計時器開始: ${formatTime(sprayerTimeInSeconds)}`;
+                 updateSprayerButtonStates();
+             }
+         }
+ 
+         document.getElementById("toggleVideoBtn").addEventListener("click", function () {
+             isVideoVisible = !isVideoVisible;
+             const videoContainer = document.getElementById("videoContainer");
+             videoContainer.style.display = isVideoVisible ? 'block' : 'none';
+             this.innerText = isVideoVisible ? '隱藏即時影像' : '顯示即時影像';
+         });
+ 
+         document.getElementById("downloadHistoryBtn").addEventListener("click", function () {
+            window.location.href = '/download_history';
+         });
+ 
+         updateFeederButtonStates();
+         updateSprayerButtonStates();
+     </script>
+ </body>
+ </html>
