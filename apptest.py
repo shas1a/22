@@ -55,7 +55,7 @@ def gen(camera):
 # **下載歷史紀錄 Excel**
 @app.route('/download_history', methods=['GET'])
 def download_history():
-    file_path = 'conchhistory.xlsx'
+    file_path = '智慧捕壽籠歷史記錄.xlsx'
     if os.path.exists(file_path):
         return send_file(file_path, as_attachment=True)
     return jsonify({"status": "文件不存在"}), 404
