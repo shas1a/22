@@ -54,8 +54,8 @@ def gen(camera):
 # **下載歷史紀錄 Excel (從 Google Sheets 下載)**
 @app.route('/download_history', methods=['GET'])
 def download_history():
-    # Google Sheets 下載連結
-    GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1NxqYEca0-wS2WFcpGZEzu01zJ7ZRw_O3/edit?usp=drive_link&ouid=112195123004054339755&rtpof=true&sd=true"
+    # Google Sheets 下載連結，確保是 export 版本
+    GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1NxqYEca0-wS2WFcpGZEzu01zJ7ZRw_O3/export?format=xlsx"
     return redirect(GOOGLE_SHEETS_URL)
 
 # **取得歷史紀錄 JSON**
@@ -63,17 +63,6 @@ def download_history():
 def get_history():
     try:
         # 這裡改為不再從本地檔案獲取，因為我們現在用 Google Sheets
-        # file_path = 'conchhistory.xlsx'
-        # if not os.path.exists(file_path):
-        #     return jsonify({"status": "無歷史紀錄", "error": "文件不存在"}), 404
-
-        # df = pd.read_excel(file_path)
-        # if df.empty:
-        #     return jsonify({"status": "無歷史紀錄", "error": "Excel文件是空的"}), 404
-
-        # history_data = df.to_json(orient='records', force_ascii=False)
-        # return jsonify(history_data)
-
         return jsonify({"status": "使用 Google Sheets 直接下載 Excel"}), 200
     except Exception as e:
         return jsonify({"status": "無法獲取歷史紀錄", "error": str(e)}), 500
