@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, jsonify, Response, send_file
+from flask import Flask, render_template, request, jsonify, Response, send_file, redirect
 import requests
-import pandas as pd
 import os
 from flask_cors import CORS  # 允許跨域請求 (讓 GitHub Pages 可以訪問)
 from cameratest import Camera  # 確保你的 camera 模組存在
@@ -52,28 +51,30 @@ def gen(camera):
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-# **下載歷史紀錄 Excel**
+# **下載歷史紀錄 Excel (從 Google Sheets 下載)**
 @app.route('/download_history', methods=['GET'])
 def download_history():
-    file_path = 'conchhistory.xlsx'
-    if os.path.exists(file_path):
-        return send_file(file_path, as_attachment=True)
-    return jsonify({"status": "文件不存在"}), 404
+    # Google Sheets 下載連結
+    GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1N4wr5UvIzRoUJ9z1hoGaZ4DLkln8jEh4/export?format=xlsx"
+    return redirect(GOOGLE_SHEETS_URL)
 
 # **取得歷史紀錄 JSON**
 @app.route('/history', methods=['GET'])
 def get_history():
     try:
-        file_path = 'conchhistory.xlsx'
-        if not os.path.exists(file_path):
-            return jsonify({"status": "無歷史紀錄", "error": "文件不存在"}), 404
+        # 這裡改為不再從本地檔案獲取，因為我們現在用 Google Sheets
+        # file_path = 'conchhistory.xlsx'
+        # if not os.path.exists(file_path):
+        #     return jsonify({"status": "無歷史紀錄", "error": "文件不存在"}), 404
 
-        df = pd.read_excel(file_path)
-        if df.empty:
-            return jsonify({"status": "無歷史紀錄", "error": "Excel文件是空的"}), 404
+        # df = pd.read_excel(file_path)
+        # if df.empty:
+        #     return jsonify({"status": "無歷史紀錄", "error": "Excel文件是空的"}), 404
 
-        history_data = df.to_json(orient='records', force_ascii=False)
-        return jsonify(history_data)
+        # history_data = df.to_json(orient='records', force_ascii=False)
+        # return jsonify(history_data)
+
+        return jsonify({"status": "使用 Google Sheets 直接下載 Excel"}), 200
     except Exception as e:
         return jsonify({"status": "無法獲取歷史紀錄", "error": str(e)}), 500
 
