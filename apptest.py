@@ -64,7 +64,7 @@ def download_history():
 @app.route('/history', methods=['GET'])
 def get_history():
     try:
-        file_path = 'conchhistory.xlsx'
+        file_path = '智慧捕壽籠歷史記錄.xlsx'
         if not os.path.exists(file_path):
             return jsonify({"status": "無歷史紀錄", "error": "文件不存在"}), 404
 
