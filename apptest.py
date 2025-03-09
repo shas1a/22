@@ -55,7 +55,7 @@ def gen(camera):
 @app.route('/download_history', methods=['GET'])
 def download_history():
     # Google Sheets 下載連結
-    GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1N4wr5UvIzRoUJ9z1hoGaZ4DLkln8jEh4/export?format=xlsx"
+    GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1NxqYEca0-wS2WFcpGZEzu01zJ7ZRw_O3/edit?usp=drive_link&ouid=112195123004054339755&rtpof=true&sd=true"
     return redirect(GOOGLE_SHEETS_URL)
 
 # **取得歷史紀錄 JSON**
