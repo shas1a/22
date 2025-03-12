@@ -12,7 +12,7 @@ LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 
 @app.route('/')
 def index():
-    return render_template('indextest.html')
+    return render_template('index.html')
 
 @app.route('/notify/feeder', methods=['POST'])
 def notify():
