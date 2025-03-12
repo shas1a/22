@@ -64,7 +64,7 @@ def gen(camera):
 def download_history():
     try:
         # Make sure the file exists in the correct location
-        file_path = '/home/pan/Downloads/nee/智慧捕壽籠歷史記錄.xlsx'
+        file_path = '智慧捕壽籠歷史記錄.xlsx'
         if os.path.exists(file_path):
             return send_file(file_path, as_attachment=True)
         else:
