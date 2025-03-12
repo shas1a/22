@@ -4,8 +4,7 @@ import pandas as pd
 import os
 from cameratest import Camera  # Replace with your actual camera module
 from flask_cors import CORS  # 允許跨域請求 (讓 GitHub Pages 可以訪問)
-
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 # LINE Notify settings
 LINE_NOTIFY_TOKEN = 'hY7R5E0yhqLipnfPyW7sGqCpEsLkxc6ojrb9kNbRpeV'
