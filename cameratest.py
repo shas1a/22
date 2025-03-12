@@ -3,7 +3,7 @@ import cv2
 class Camera(object):
     def __init__(self):
         # Initialize the camera; 0 is the default camera
-        self.video_source = 0  # Change this if you have multiple cameras
+        self.video_source = 1  # Change this if you have multiple cameras
         self.vid = cv2.VideoCapture(self.video_source)
 
         if not self.vid.isOpened():
